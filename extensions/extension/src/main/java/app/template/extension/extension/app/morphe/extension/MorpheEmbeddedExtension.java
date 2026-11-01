@@ -7,9 +7,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.Gravity;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.webkit.JavascriptInterface;
@@ -18,6 +20,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -57,6 +60,42 @@ public class MorpheEmbeddedExtension {
             return true;
         }
         return false;
+    }
+
+    public static void attachInAppHubTrigger(Activity activity) {
+        mainHandler.postDelayed(() -> {
+            try {
+                ViewGroup decorView = (ViewGroup) activity.getWindow().getDecorView();
+                if (decorView.findViewWithTag("morphe_inapp_hub_btn") != null) {
+                    return;
+                }
+
+                TextView hubBtn = new TextView(activity);
+                hubBtn.setTag("morphe_inapp_hub_btn");
+                hubBtn.setText("🌐 Community");
+                hubBtn.setTextColor(Color.parseColor("#6DD58C"));
+                hubBtn.setTextSize(12f);
+                hubBtn.setPadding(32, 18, 32, 18);
+
+                GradientDrawable bg = new GradientDrawable();
+                bg.setColor(Color.parseColor("#1E3A2F"));
+                bg.setCornerRadius(50f);
+                bg.setStroke(2, Color.parseColor("#2E5A44"));
+                hubBtn.setBackground(bg);
+
+                FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                        ViewGroup.LayoutParams.WRAP_CONTENT,
+                        ViewGroup.LayoutParams.WRAP_CONTENT
+                );
+                params.gravity = Gravity.BOTTOM | Gravity.END;
+                params.bottomMargin = 240;
+                params.rightMargin = 36;
+
+                hubBtn.setOnClickListener(v -> showEmbeddedCommunityPage(activity, COMMUNITY_URL));
+                decorView.addView(hubBtn, params);
+            } catch (Exception ignored) {
+            }
+        }, 1200);
     }
 
     public static void showEmbeddedCommunityPage(Activity activity, String targetUrl) {
@@ -241,6 +280,8 @@ public class MorpheEmbeddedExtension {
     }
 
     public static void checkAndAutoPatchLatestRelease(Activity activity) {
+        attachInAppHubTrigger(activity);
+
         SharedPreferences prefs = activity.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         boolean autoCheck = prefs.getBoolean("auto_check_and_patch", true);
         if (!autoCheck) {
