@@ -1,3 +1,10 @@
+## [1.1.0](https://github.com/prtmN5H1/NP-morphe-patches/compare/v1.0.0...v1.1.0) (2026-11-01)
+
+### ✨ New Features
+
+* fix universal patch default flag ([51236bc](https://github.com/prtmN5H1/NP-morphe-patches/commit/51236bce0d54e1a6c5fbead887a7642ab3441151))
+* update kotlin patch for morphe 2.1.0 ([b3a7749](https://github.com/prtmN5H1/NP-morphe-patches/commit/b3a7749566d948d3bcef78a2da826d5eb40f85e3))
+
 ## 1.0.0 (2026-11-01)
 
 ### ✨ New Features
