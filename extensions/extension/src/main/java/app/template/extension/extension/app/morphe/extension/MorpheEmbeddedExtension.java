@@ -20,19 +20,24 @@ import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MorpheEmbeddedExtension {
 
@@ -204,7 +209,7 @@ public class MorpheEmbeddedExtension {
                 }
             } catch (Exception ignored) {
             }
-            org.json.JSONArray arr = new org.json.JSONArray(repos);
+            JSONArray arr = new JSONArray(repos);
             return arr.toString();
         }
 
@@ -221,11 +226,11 @@ public class MorpheEmbeddedExtension {
         }
 
         private void extractStringsFromFile(File file, Set<String> outSet) {
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new java.io.FileInputStream(file)))) {
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)))) {
                 String line;
-                java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("github\\.com/([a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+)");
+                Pattern pattern = Pattern.compile("github\\.com/([a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+)");
                 while ((line = reader.readLine()) != null) {
-                    java.util.regex.Matcher matcher = pattern.matcher(line);
+                    Matcher matcher = pattern.matcher(line);
                     while (matcher.find()) {
                         outSet.add(matcher.group(1));
                     }
@@ -267,7 +272,7 @@ public class MorpheEmbeddedExtension {
                         .getPackageInfo(activity.getPackageName(), 0).versionName;
 
                 if (!latestTag.isEmpty() && !latestTag.equals(currentVersion)) {
-                    org.json.JSONArray assets = json.optJSONArray("assets");
+                    JSONArray assets = json.optJSONArray("assets");
                     if (assets != null && assets.length() > 0) {
                         String downloadUrl = assets.getJSONObject(0).optString("browser_download_url", "");
                         if (downloadUrl.endsWith(".apk")) {
@@ -344,11 +349,24 @@ public class MorpheEmbeddedExtension {
 
     private static void promptInstallApk(Activity activity, File apkFile) {
         Intent installIntent = new Intent(Intent.ACTION_VIEW);
-        Uri apkUri = androidx.core.content.FileProvider.getUriForFile(
-                activity,
-                activity.getPackageName() + ".provider",
-                apkFile
-        );
+        Uri apkUri;
+        try {
+            Class<?> fileProviderClass = Class.forName("androidx.core.content.FileProvider");
+            Method getUriMethod = fileProviderClass.getMethod(
+                    "getUriForFile",
+                    Context.class,
+                    String.class,
+                    File.class
+            );
+            apkUri = (Uri) getUriMethod.invoke(
+                    null,
+                    activity,
+                    activity.getPackageName() + ".provider",
+                    apkFile
+            );
+        } catch (Exception e) {
+            apkUri = Uri.fromFile(apkFile);
+        }
         installIntent.setDataAndType(apkUri, "application/vnd.android.package-archive");
         installIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
         activity.startActivity(installIntent);
