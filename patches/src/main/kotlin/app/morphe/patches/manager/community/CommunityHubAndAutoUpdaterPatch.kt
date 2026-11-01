@@ -1,6 +1,6 @@
 package app.morphe.patches.manager.community
 
-import app.morphe.patcher.data.BytecodeContext
+import app.morphe.patcher.BytecodeContext
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructions
 import app.morphe.patcher.extensions.InstructionExtensions.addInstructionsWithLabels
 import app.morphe.patcher.fingerprint.MethodFingerprint
