@@ -17,7 +17,7 @@ object MainActivityOnCreateFingerprint : Fingerprint(
 val communityHubAndAutoUpdaterPatch = bytecodePatch(
     name = "Embedded Community Hub & Auto-Updater",
     description = "Embeds morphe-patches.software directly inside Morphe Manager with live 'Already Added' source detection and automatic GitHub release downloading & self-patching.",
-    default = true
+    default = false
 ) {
     extendWith("extensions/extension.mpe")
 
